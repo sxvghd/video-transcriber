@@ -1,12 +1,13 @@
 from typing import NamedTuple
 import sys
+import os
 
 from pyannote.audio import Pipeline
 from dotenv import dotenv_values
 import subprocess
 from pathlib import Path
 
-HF_TOKEN = dotenv_values(Path(__file__).parent / ".env")["HF_TOKEN"] or ""
+HF_TOKEN = os.environ["TOKEN"]
 INPUT_DIR = Path(__file__).parent / "input"
 OUTPUT_DIR = Path(__file__).parent / "output"
 
@@ -36,26 +37,15 @@ def overlap(text: TranscribedSegment, diarization: SpeakerSegment):
 
 
 def main():
-    # Process all files in input/
-    for f in INPUT_DIR.iterdir():
-        process(f)
+    # Process downloaded file in input/
+    process(INPUT_DIR.iterdir()[0])
 
 
 def process(file_to_process: Path):
-    # Convert with ffmpeg
-    wav_path = OUTPUT_DIR / (file_to_process.stem + ".wav")
-    print(f"Converting {file_to_process} to .wav...")
-    subprocess.run(
-        f"ffmpeg -y -i '{file_to_process}' -ar 16000 -ac 1 -c:a pcm_s16le '{wav_path}'",
-        shell=True,
-        stderr=subprocess.STDOUT,
-        stdout=sys.stdout,
-    )
-
     # Transcribe and save
     print(f"Transcribing with Whisper...")
     subprocess.run(
-        f"/whisper.cpp/main -m /models/ggml-large.bin -ml 50 -ocsv -f '{wav_path}'",
+        f"/whisper.cpp/main -m /src/models/ggml-whisper-medium.bin -ml 50 -ocsv -f '{wav_path}'",
         shell=True,
         stderr=subprocess.STDOUT,
         stdout=sys.stdout,

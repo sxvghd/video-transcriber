@@ -1,7 +1,10 @@
 services:
   pyannote:
-    container_name: pyannote
+    container_name: transcriber
     build: .
     volumes:
       - ./src:/src
-    command: python3 /src/main.py
+    command: sh -c /src/main.sh
+    environment:
+      HF_TOKEN: "<your token here>"
+      VIDEO_URL: "<video url here>"
