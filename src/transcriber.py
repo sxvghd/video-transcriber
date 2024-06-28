@@ -1,16 +1,13 @@
 from typing import NamedTuple
+from pathlib import Path
+from pyannote.audio import Pipeline
+import subprocess
 import sys
 import os
 
-from pyannote.audio import Pipeline
-from dotenv import dotenv_values
-import subprocess
-from pathlib import Path
-
-HF_TOKEN = os.environ["TOKEN"]
+HF_TOKEN = os.environ["HF_TOKEN"]
 INPUT_DIR = Path(__file__).parent / "input"
 OUTPUT_DIR = Path(__file__).parent / "output"
-
 
 class TranscribedSegment(NamedTuple):
     start: int
@@ -38,19 +35,21 @@ def overlap(text: TranscribedSegment, diarization: SpeakerSegment):
 
 def main():
     # Process downloaded file in input/
-    process(INPUT_DIR.iterdir()[0])
+    file_path = os.path.join(INPUT_DIR,os.listdir(INPUT_DIR)[0])
+    process(Path(file_path))
 
 
 def process(file_to_process: Path):
+    wav_path = file_to_process
     # Transcribe and save
     print(f"Transcribing with Whisper...")
     subprocess.run(
-        f"/whisper.cpp/main -m /src/models/ggml-whisper-medium.bin -ml 50 -ocsv -f '{wav_path}'",
+        f"/whisper.cpp/main -m /models/ggml-whisper-medium.bin -ml 50 -l auto -ocsv -f '{wav_path}'",
         shell=True,
         stderr=subprocess.STDOUT,
         stdout=sys.stdout,
     )
-    transcript_path = wav_path.parent / f"{wav_path.name}.csv"
+    transcript_path = str(wav_path) + ".csv"
 
     # Diarize and save
     pipeline = Pipeline.from_pretrained(
@@ -68,14 +67,14 @@ def process(file_to_process: Path):
     ]
 
     # Read whisper transcript
+    transcribed_segments = []
     with open(transcript_path, newline="") as f:
-        lines = [line.split(" ", 2) for line in f.readlines()]
-
-        transcribed_segments = [
-            TranscribedSegment(int(line[0][:-1]), int(line[1][:-1]), line[2][1:-2])
-            for line in lines
-        ]
-
+        lines = [line.split(",", 2) for line in f.readlines()]
+        for line in lines:
+            try:
+                transcribed_segments += [TranscribedSegment(int(line[0]), int(line[1]), line[2])]
+            except ValueError:
+                continue
     # Match transcribed segments to the speaker segment
     # Based on highest fraction of overlap
     matched = []

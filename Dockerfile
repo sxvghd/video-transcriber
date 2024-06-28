@@ -2,10 +2,10 @@ FROM pytorch/pytorch
 
 WORKDIR /
 
-RUN apt update && apt install -y libsndfile1 ffmpeg git build-essential wget
+RUN apt update && apt install -y libsndfile1 ffmpeg git build-essential curl
 
-RUN mkdir /src/models
-RUN wget -o /src/models/ggml-whisper-medium.bin "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-medium.bin?download=true"
+RUN mkdir /models
+RUN curl -L -o /models/ggml-whisper-medium.bin "https://huggingface.co/ggerganov/whisper.cpp/resolve/main/ggml-large-v3.bin?download=true"
 
 RUN git clone https://github.com/ggerganov/whisper.cpp.git && cd /whisper.cpp && make && chmod +x ./main
 
