@@ -1,10 +1,12 @@
-# Speaker Diarization with Pyannote and [Whisper.cpp][whisper.cpp]
+# Video transcription utilizing Speaker Diarization with Pyannote and [Whisper.cpp][whisper.cpp]
 
-Uses [Whisper.cpp][whisper.cpp] to transcribe audio, and then performs speaker diarization with [Pyannote][pyannote].
+Uses [yt-dlp] to download and convert media, [Whisper.cpp][whisper.cpp] to transcribe audio, and then performs speaker diarization with [Pyannote][pyannote].
 
 ## Usage
 
-Place video/audio files in `input/`, and then run `main.py` with `docker compose up`.
+Set `HF_TOKEN` (Hugging Face token) and `VIDEO_URL` environment variables in docker-compose.yml, and then run `main.py` with `docker compose up`.
+
+The large whisper model is automatically downloaded, but this can be adjusted in the Dockerfile.
 
 ## Notes
 
@@ -12,3 +14,4 @@ Performance for diarization seems to be improved when segment length for `whispe
 
 [whisper.cpp]: https://github.com/ggerganov/whisper.cpp
 [pyannote]: https://github.com/pyannote/pyannote-audio
+[yt-dlp]: https://github.com/yt-dlp/yt-dlp
